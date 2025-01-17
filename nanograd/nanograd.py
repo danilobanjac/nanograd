@@ -149,6 +149,32 @@ class Value:
 
         return other_converted - self
 
+    @autodiff_binary_op(
+        lambda lhs, rhs, out: (
+            rhs.data * lhs.data ** (rhs.data - 1),
+            out.data * math.log(lhs.data),
+        )
+    )
+    def __pow__(self: "Value", other: Numeric) -> "Value":
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for **: 'Value' and '{type(other).__name__}'",
+        )
+
+        return Value(
+            data=self.data ** other_converted.data,
+            op="**",
+            parents=(self, other_converted),
+        )
+
+    def __rpow__(self: "Value", other: Numeric) -> "Value":
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for **: '{type(other).__name__}' and 'Value'",
+        )
+
+        return other_converted ** self
+
     def backward(self: "Value") -> None:
         self.grad = 1.0
         graph = {node: node.parents for node in self._collect_all_nodes()}
