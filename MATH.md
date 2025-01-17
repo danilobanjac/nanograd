@@ -136,14 +136,10 @@ $$
      \frac{\partial (xy + 3)}{\partial y} = x.$$
 
      So, 
-     $$
-     \frac{\partial z}{\partial x} 
-     = 2(xy + 3) \times y = 2(6 + 3) \times 3 = 2 \times 9 \times 3 = 54.
-     $$
-     $$
-     \frac{\partial z}{\partial y} 
-     = 2(xy + 3) \times x = 2(9) \times 2 = 36.
-     $$
+     $$\frac{\partial z}{\partial x} 
+     = 2(xy + 3) \times y = 2(6 + 3) \times 3 = 2 \times 9 \times 3 = 54.$$
+     $$\frac{\partial z}{\partial y} 
+     = 2(xy + 3) \times x = 2(9) \times 2 = 36.$$
 
    - In Nanograd, you’d just do:
      ```python
@@ -164,10 +160,8 @@ $$
 In **nanograd**:
 
 - Each operation (like `+`, `*`, etc.) is **decorated** by a rule telling us how to compute its local derivative. For multiplication $`x \times y`$:
-  $$
-  \frac{\partial}{\partial x}(x \times y) = y, \quad
-  \frac{\partial}{\partial y}(x \times y) = x.
-  $$
+  $$\frac{\partial}{\partial x}(x \times y) = y, \quad
+  \frac{\partial}{\partial y}(x \times y) = x.$$
 - When you create a new `Value` (call it `out`) from two parents (`lhs` and `rhs`), `out`’s `grad_fn` is set so that it knows:  
   1. **Which** partial derivatives to add to `lhs.grad` and `rhs.grad` once `out.grad` is known.  
   2. The exact chain rule formula for that operation.
