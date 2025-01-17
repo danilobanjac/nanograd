@@ -122,9 +122,7 @@ $$
 
 1. **Forward pass** (compute the actual numeric value). Suppose $`x = 2, y = 3`$.
 
-   $$
-   x \times y = 2 \times 3 = 6, \quad 6 + 3 = 9, \quad 9^2 = 81.
-   $$
+   $$x \times y = 2 \times 3 = 6, \quad 6 + 3 = 9, \quad 9^2 = 81.$$
 
    So $`z = 81`$.
 
