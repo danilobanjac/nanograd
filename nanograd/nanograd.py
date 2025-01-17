@@ -69,16 +69,10 @@ class Value:
 
     @autodiff_binary_op(lambda lhs, rhs, out: (1.0, 1.0))
     def __add__(self: "Value", other: Numeric) -> "Value":
-        other_converted: Value
-
-        if isinstance(other, (int, float)):
-            other_converted = Value(data=other)
-        elif not isinstance(other, Value):
-            raise TypeError(
-                f"unsupported operand type(s) for +: 'Value' and '{type(other).__name__}'"
-            )
-        else:
-            other_converted = other
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for +: 'Value' and '{type(other).__name__}'",
+        )
 
         return Value(
             data=self.data + other_converted.data,
@@ -88,16 +82,10 @@ class Value:
 
     @autodiff_binary_op(lambda lhs, rhs, out: (rhs.data, lhs.data))
     def __mul__(self: "Value", other: Numeric) -> "Value":
-        other_converted: Value
-
-        if isinstance(other, (int, float)):
-            other_converted = Value(data=other)
-        elif not isinstance(other, Value):
-            raise TypeError(
-                f"unsupported operand type(s) for *: 'Value' and '{type(other).__name__}'"
-            )
-        else:
-            other_converted = other
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for *: 'Value' and '{type(other).__name__}'",
+        )
 
         return Value(
             data=self.data * other_converted.data,
@@ -109,16 +97,10 @@ class Value:
         lambda lhs, rhs, out: (1.0 / rhs.data, -lhs.data / (rhs.data ** 2))
     )
     def __truediv__(self: "Value", other: Numeric) -> "Value":
-        other_converted: Value
-
-        if isinstance(other, (int, float)):
-            other_converted = Value(data=other)
-        elif not isinstance(other, Value):
-            raise TypeError(
-                f"unsupported operand type(s) for /: 'Value' and '{type(other).__name__}'"
-            )
-        else:
-            other_converted = other
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for /: 'Value' and '{type(other).__name__}'",
+        )
 
         return Value(
             data=self.data / other_converted.data,
@@ -127,16 +109,10 @@ class Value:
         )
 
     def __rtruediv__(self: "Value", other: Numeric) -> "Value":
-        other_converted: Value
-
-        if isinstance(other, (int, float)):
-            other_converted = Value(data=other)
-        elif not isinstance(other, Value):
-            raise TypeError(
-                f"unsupported operand type(s) for /: '{type(other).__name__}' and 'Value'"
-            )
-        else:
-            other_converted = other
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for /: '{type(other).__name__}' and 'Value'",
+        )
 
         return other_converted - self
 
@@ -166,16 +142,10 @@ class Value:
         return self + (-other)
 
     def __rsub__(self: "Value", other: Numeric) -> "Value":
-        other_converted: Value
-
-        if isinstance(other, (int, float)):
-            other_converted = Value(data=other)
-        elif not isinstance(other, Value):
-            raise TypeError(
-                f"unsupported operand type(s) for -: '{type(other).__name__}' and 'Value'"
-            )
-        else:
-            other_converted = other
+        other_converted = Value._convert_value(
+            other,
+            f"unsupported operand type(s) for -: '{type(other).__name__}' and 'Value'",
+        )
 
         return other_converted - self
 
@@ -237,6 +207,15 @@ class Value:
                 stack.extend(value.parents)
 
         return visited
+
+    @staticmethod
+    def _convert_value(other: Numeric, error_message: str) -> "Value":
+        if isinstance(other, (int, float)):
+            return Value(data=other)
+        elif not isinstance(other, Value):
+            raise TypeError(error_message)
+        else:
+            return other
 
     __radd__ = __add__
     __rmul__ = __mul__
