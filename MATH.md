@@ -130,12 +130,10 @@ $$
 
    - We can do it by hand, or rely on Nanograd’s chain rule. By hand:
 
-     $$
-     z = (xy + 3)^2, \quad
+     $$z = (xy + 3)^2, \quad
      \frac{\partial z}{\partial (xy + 3)} = 2(xy + 3), \quad
      \frac{\partial (xy + 3)}{\partial x} = y, \quad
-     \frac{\partial (xy + 3)}{\partial y} = x.
-     $$
+     \frac{\partial (xy + 3)}{\partial y} = x.$$
 
      So, 
      $$
