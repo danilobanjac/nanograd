@@ -17,10 +17,10 @@
 
 ## 2. Quick Refresher: What Is a Derivative?
 
-In simple terms, the **derivative** of a function $ f(x) $ with respect to $ x $ (written $\frac{d f}{dx}$) is the **rate of change** or **slope** of $ f $ when we slightly change $ x $.
+In simple terms, the **derivative** of a function $`f(x)`$ with respect to $`x`$ (written $`\frac{d f}{dx}`$) is the **rate of change** or **slope** of $`f`$ when we slightly change $`x`$.
 
-- For example, if $ f(x) = x^2 $, the derivative is $\frac{d}{dx}(x^2) = 2x$.
-- If $ x $ changes by a tiny amount, the function $ x^2 $ will change by approximately $ 2x \times (\text{tiny amount}) $.
+- For example, if $`f(x) = x^2`$, the derivative is $`\frac{d}{dx}(x^2) = 2x`$.
+- If $`x`$ changes by a tiny amount, the function $`x^2`$ will change by approximately $`2x \times (\text{tiny amount})`$.
 
 Why do we care? In **machine learning**, we often want to **adjust parameters** (like weights in a neural network) to minimize some “loss” function. We do this by following the slope (or **gradient**) that tells us **which direction** reduces the loss.
 
@@ -28,16 +28,16 @@ Why do we care? In **machine learning**, we often want to **adjust parameters** 
 
 ## 3. Extending to More Dimensions: Partial Derivatives
 
-When we have multiple variables, say $ x, y, z $, a function might look like
+When we have multiple variables, say $`x, y, z`$, a function might look like
 
 $$
 f(x, y, z) = x \times y + z.
 $$
 
-We measure how $ f $ changes in each variable’s direction separately:
+We measure how $`f`$ changes in each variable’s direction separately:
 
-- $\frac{\partial f}{\partial x}$ answers: “How does $ f $ change if I only move $ x $ a little, but keep $ y $ and $ z $ fixed?”
-- $\frac{\partial f}{\partial y}$, $\frac{\partial f}{\partial z}$ are interpreted similarly.
+- $`\frac{\partial f}{\partial x}`$ answers: “How does $`f`$ change if I only move $`x`$ a little, but keep $`y`$ and $`z`$ fixed?”
+- $`\frac{\partial f}{\partial y}`$, $`\frac{\partial f}{\partial z}`$ are interpreted similarly.
 
 In practice, a neural network has many parameters (thousands or millions), and we need all their partial derivatives to do a **gradient descent** update.
 
@@ -59,10 +59,10 @@ $$
 \frac{df}{dx} = \frac{df}{du} \times \frac{du}{dx}.
 $$
 
-- We know $\frac{df}{du} = 2u$, and $\frac{du}{dx} = 3$.  
-- Substituting $u = 3x + 2$, we get $\frac{df}{dx} = 2(3x + 2) \times 3 = 6(3x + 2)$.
+- We know $`\frac{df}{du} = 2u`$, and $`\frac{du}{dx} = 3`$.  
+- Substituting $`u = 3x + 2`$, we get $`\frac{df}{dx} = 2(3x + 2) \times 3 = 6(3x + 2)`$.
 
-If you expand $(3x + 2)^2$ yourself (to $9x^2 + 12x + 4$), you can also confirm $\frac{d}{dx}(9x^2 + 12x + 4) = 18x + 12$. Factoring out 6, that’s $6(3x + 2)$. The chain rule just organizes these steps.
+If you expand $`(3x + 2)^2`$ yourself (to $`9x^2 + 12x + 4`$), you can also confirm $`\frac{d}{dx}(9x^2 + 12x + 4) = 18x + 12`$. Factoring out 6, that’s $`6(3x + 2)`$. The chain rule just organizes these steps.
 
 When we build large functions (like neural networks), we apply the chain rule **many times** to handle each “layer” or operation.
 
@@ -85,16 +85,16 @@ z = x * y  # Another Value representing 2.0 * 3.0
 - Each `Value` knows:
   1. Its **data** (the actual numeric value).
   2. Its **parents**: other `Value`s that were combined to create it.
-  3. A **grad** attribute that will store $\frac{\partial \text{(output)}}{\partial \text{(this Value)}}$.
+  3. A **grad** attribute that will store $`\frac{\partial \text{(output)}}{\partial \text{(this Value)}}`$.
   4. A function (`grad_fn`) that knows how to compute its partial derivatives when we backprop.
 
 ### 5.2. Building the “Computation Graph”
 
 When you do `z = x * y`, Nanograd internally creates a small “node” in a graph where:
 
-- $z$ depends on $x$ and $y$.  
+- $`z`$ depends on $`x`$ and $`y`$.  
 - The operation is `*`.  
-- If we change `x` or `y`, `z` will change according to $\frac{\partial z}{\partial x} = y$ and $\frac{\partial z}{\partial y} = x$.
+- If we change `x` or `y`, `z` will change according to $`\frac{\partial z}{\partial x} = y`$ and $`\frac{\partial z}{\partial y} = x`$.
 
 Nanograd keeps track of these relationships automatically.
 
@@ -104,7 +104,7 @@ Nanograd keeps track of these relationships automatically.
 
 After you define your final output function (say a “loss” in machine learning), you call `some_value.backward()`. Nanograd then:
 
-1. Sets the gradient of `some_value` (the final output) to 1.0 (because $\frac{\partial (\text{itself})}{\partial (\text{itself})} = 1$).  
+1. Sets the gradient of `some_value` (the final output) to 1.0 (because $`\frac{\partial (\text{itself})}{\partial (\text{itself})} = 1`$).  
 2. Looks at each node’s parents in the correct topological order (ensuring we visit a parent node *before* its children).  
 3. Applies the appropriate chain rule step to update each parent’s gradient.  
 
@@ -120,15 +120,15 @@ $$
 z = (x \times y + 3)^2.
 $$
 
-1. **Forward pass** (compute the actual numeric value). Suppose $x = 2, y = 3$.
+1. **Forward pass** (compute the actual numeric value). Suppose $`x = 2, y = 3`$.
 
    $$
    x \times y = 2 \times 3 = 6, \quad 6 + 3 = 9, \quad 9^2 = 81.
    $$
 
-   So $z = 81$.
+   So $`z = 81`$.
 
-2. **Backward pass** (compute partial derivatives $\frac{\partial z}{\partial x}$ and $\frac{\partial z}{\partial y}$ automatically):
+2. **Backward pass** (compute partial derivatives $`\frac{\partial z}{\partial x}`$ and $`\frac{\partial z}{\partial y}`$ automatically):
 
    - We can do it by hand, or rely on Nanograd’s chain rule. By hand:
 
@@ -167,7 +167,7 @@ $$
 
 In **nanograd**:
 
-- Each operation (like `+`, `*`, etc.) is **decorated** by a rule telling us how to compute its local derivative. For multiplication $x \times y$:
+- Each operation (like `+`, `*`, etc.) is **decorated** by a rule telling us how to compute its local derivative. For multiplication $`x \times y`$:
   $$
   \frac{\partial}{\partial x}(x \times y) = y, \quad
   \frac{\partial}{\partial y}(x \times y) = x.
@@ -249,15 +249,15 @@ for (x1_raw, x2_raw), _ in training_data:
 
 ### 9.1. Why Are We Taking Derivatives Here?
 
-- **Logistic regression** tries to find parameters $w_1, w_2, b$ that minimize the overall “loss” (the cross-entropy), i.e., how “wrong” our predictions are.  
-- Each iteration, we compute **partial derivatives** of the loss with respect to each parameter ($\frac{\partial L}{\partial w_1}$, etc.).  
-- We adjust $w_1$ by subtracting a small fraction of $\frac{\partial L}{\partial w_1}$. This is exactly **gradient descent**.
+- **Logistic regression** tries to find parameters $`w_1, w_2, b`$ that minimize the overall “loss” (the cross-entropy), i.e., how “wrong” our predictions are.  
+- Each iteration, we compute **partial derivatives** of the loss with respect to each parameter ($`\frac{\partial L}{\partial w_1}`$, etc.).  
+- We adjust $`w_1`$ by subtracting a small fraction of $`\frac{\partial L}{\partial w_1}`$. This is exactly **gradient descent**.
 
 ### 9.2. Sigmoid and Cross-Entropy
 
-- $\text{sigmoid}(z) = \frac{1}{1 + e^{-z}}$  
-  - The derivative is $\sigma'(z) = \sigma(z) [1 - \sigma(z)]$.  
-- $\ln$ is the **natural logarithm**. Its derivative is $1 / x$.  
+- $`\text{sigmoid}(z) = \frac{1}{1 + e^{-z}}`$  
+  - The derivative is $`\sigma'(z) = \sigma(z) [1 - \sigma(z)]`$.  
+- $`\ln`$ is the **natural logarithm**. Its derivative is $`1 / x`$.  
 - So each time we do a logistic regression forward pass plus cross-entropy, we rely on multiple small chain-rule steps that Nanograd automatically wires up.
 
 ---
