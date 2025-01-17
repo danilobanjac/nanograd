@@ -114,7 +114,7 @@ class Value:
             f"unsupported operand type(s) for /: '{type(other).__name__}' and 'Value'",
         )
 
-        return other_converted - self
+        return other_converted / self
 
     @autodiff_unary_op(lambda lhs, out: 1.0 - out.data ** 2)
     def tanh(self: "Value") -> "Value":
