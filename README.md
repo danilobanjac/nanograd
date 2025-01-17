@@ -1,153 +1,182 @@
 # Nanograd
 
-A tiny, educational autodifferentiation (AD) library for Python, plus a simple Multi-Layer Perceptron (MLP) implementation.  
-**Nanograd** uses Python's built-in `graphlib.TopologicalSorter` to perform reverse-mode automatic differentiation on a DAG of operations.  
+A minimal, educational automatic differentiation (autodiff) library in Python, with a toy neural network example and a logistic regression “AND” classifier.
 
-## Features
+## Table of Contents
 
-- **Value** class for tracking data, gradients, and references to parent `Value` objects.  
-- **Unary & Binary autodiff** via decorators:
-  - `+`, `-`, `*`, `tanh`, and more.
-- **Graph visualization** through `graphviz`.
-- **Mini neural network library** (Perceptron, Layer, MultiLayerPerceptron).
-
-## Installation
-
-1. Clone this repository.
-2. Ensure you have Python version >=3.12.
-3. (Optional) Create a virtual environment:  
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-4. Install dependencies:  
-   ```bash
-   pip install -r requirements.txt
-   ```
-   Make sure to include `graphviz` and any other packages in your `requirements.txt`.
-
-## Getting Started
-
-### Simple Example with `Value`
-
-```python
-from nanograd.nanograd import Value
-
-# Define two Values
-x = Value(3.0, name="x")
-y = Value(-2.0, name="y")
-
-# Build an expression
-z = x * y + x + 2.0  #  => z = 3.0 * (-2.0) + 3.0 + 2.0
-print(f"z.data = {z.data}")  
-# z.data = 3.0 * (-2.0) + 3.0 + 2.0 = -6 + 3 + 2 = -1
-
-# Backprop
-z.backward()
-
-# Inspect gradients
-print(f"x.grad = {x.grad}")
-print(f"y.grad = {y.grad}")
-
-# Explanation:
-# z = x*y + x + 2
-# dz/dx = y + 1
-# dz/dy = x
-# So x.grad = -2 + 1 = -1
-#    y.grad = 3
-```
-
-You can visualize the computation graph with:
-
-```python
-dot = z.visualize()
-dot.render("simple_example", view=True)
-```
-
-### Example: Optimizing a Simple Function
-
-Suppose you want to find a minimum for the function \((x + 2)^2\). We'll do a small gradient descent by hand:
-
-```python
-x = Value(0.0, name="x")
-
-for step in range(50):
-    x.zero_grad()               # reset gradient
-    y = (x + 2.0) * (x + 2.0)    # forward pass
-    y.backward()                # backprop
-    lr = 0.1
-    x.data -= lr * x.grad       # gradient descent update
-
-print(f"x after optimization: {x.data}")
-# It should converge near x = -2
-```
-
-### Example: Training a MiniLayerPerceptron (MLP)
-
-We have three main classes for building neural networks:
-
-- `Perceptron(n_inputs)`
-- `Layer(n_inputs, n_perceptrons)`
-- `MultiLayerPerceptron(n_inputs, n_outs)`
-
-**Goal:** Learn a simple XOR function with a 2-layer MLP.
-
-```python
-from nanograd.nanograd import Value
-from nanograd.nn import MultiLayerPerceptron
-
-# Create a small MLP:
-#   2 inputs -> 4 hidden -> 1 output
-mlp = MultiLayerPerceptron(n_inputs=2, n_outs=[4, 1])
-
-# Our XOR dataset
-data = [
-    ([0.0, 0.0], 0.0),
-    ([0.0, 1.0], 1.0),
-    ([1.0, 0.0], 1.0),
-    ([1.0, 1.0], 0.0),
-]
-
-# Training loop
-lr = 0.1
-for epoch in range(1000):
-    loss = Value(0.0)
-    for inputs, target in data:
-        # Forward pass
-        out = mlp(inputs)[0]  # single output
-        # We'll compute a simple mean squared error
-        diff = out - target
-        sample_loss = diff * diff
-        loss = loss + sample_loss
-
-    # Zero gradients
-    for p in mlp.parameters():
-        p.zero_grad()
-
-    # Backprop
-    loss.backward()
-
-    # Gradient descent update
-    for p in mlp.parameters():
-        p.data -= lr * p.grad
-
-    if epoch % 100 == 0:
-        print(f"Epoch {epoch}, loss = {loss.data:.4f}")
-
-# Check predictions
-for inputs, target in data:
-    out = mlp(inputs)[0]
-    print(f"Inputs={inputs}, MLP output={out.data:.4f}, target={target}")
-```
-
-After enough epochs, you should see that the output is close to the expected XOR results (0.0 or 1.0).  
+- [Overview](#overview)  
+- [Requirements](#requirements)  
+- [Installation](#installation)  
+- [Quick Start](#quick-start)  
+  - [1. The AND Example (Logistic Regression)](#1-the-and-example-logistic-regression)  
+  - [2. Visualizing the Computation Graph](#2-visualizing-the-computation-graph)  
+- [How It Works](#how-it-works)  
+- [License](#license)
 
 ---
 
-## Development
+## Overview
 
-- **Adding New Operations**:  
-  If you want to add new operations (e.g., division, exponent, log), you can create a function with a custom backward rule. Decorate your method with `@autodiff_binary_op(backward_rule)` or `@autodiff_unary_op(backward_rule)` and implement the partial derivatives.
+**Nanograd** is a minimalistic autodiff library demonstrating how to:
+1. Represent arithmetic operations as nodes in a computation graph,
+2. Compute gradients via reverse-mode automatic differentiation (backpropagation),
+3. Build small neural networks (e.g., a Perceptron and Multi-Layer Perceptron) for illustrative purposes.
 
-- **Experiments**:  
-  You can easily extend the `Layer` or `MultiLayerPerceptron` classes with new activation functions (just define them as `@autodiff_unary_op(...)` on `Value`).
+The library is composed of:
+- A `Value` class that wraps Python floats and tracks gradients,
+- Operator overloading for common arithmetic and activation functions,
+- Basic building blocks for feed-forward networks.
+
+---
+
+## Requirements
+
+- **Python >= 3.12**  
+  Some of the examples use newer Python features (e.g., `itertools.pairwise`).  
+- **Graphviz** (optional but recommended for visualization)  
+  - On many Linux distributions, you can install it via `sudo apt-get install graphviz`.  
+  - On Windows, download from the [official Graphviz website](https://graphviz.org/download/).  
+  - For Mac, you can use Homebrew: `brew install graphviz`.  
+
+Additionally, you’ll need the Python `graphviz` package to visualize your computation graph:
+
+```
+pip install graphviz
+```
+
+---
+
+## Installation
+
+1. **Clone or download** this repository:
+
+   ```bash
+   git clone https://github.com/<user>/nanograd.git
+   cd nanograd
+   ```
+
+2. **(Optional) Create a virtual environment**:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate     # On Linux/Mac
+   venv\Scripts\activate        # On Windows
+   ```
+
+3. **Install dependencies**:
+
+   ```bash
+   pip install graphviz
+   # If you plan on using the MLP classes, no other dependencies are required
+   # besides the standard library and 'random', 'itertools', etc.
+   ```
+
+---
+
+## Quick Start
+
+### 1. The AND Example (Logistic Regression)
+
+Below is a simple script demonstrating how to learn the AND function using a single logistic neuron in **nanograd**. Create a file (e.g., `example_and.py`) with the following content:
+
+```python
+import random
+from nanograd.nanograd import Value
+
+# Training data for AND gate
+training_data = [
+    ((0, 0), 0),
+    ((0, 1), 0),
+    ((1, 0), 0),
+    ((1, 1), 1),
+]
+
+# Initialize parameters
+w1 = Value(random.uniform(-1, 1), "w1")
+w2 = Value(random.uniform(-1, 1), "w2")
+b  = Value(random.uniform(-1, 1), "b")
+
+# Training hyperparameters
+lr = 0.05
+epochs = 10_000
+
+def forward(x1: Value, x2: Value) -> Value:
+    # Single-layer logistic regression: sigmoid(w1*x1 + w2*x2 + b)
+    return (x1 * w1 + x2 * w2 + b).sigmoid()
+
+def cross_entropy(y_true: Value, y_pred: Value) -> Value:
+    # Binary cross-entropy: -(y_true * ln(y_pred) + (1-y_true)*ln(1-y_pred))
+    return -(y_true * y_pred.ln() + (1 - y_true) * (1 - y_pred).ln())
+
+for epoch in range(1, epochs + 1):
+    # Accumulate total loss over the mini-dataset
+    total_loss = Value(0.0)
+
+    for (x1_raw, x2_raw), y_raw in training_data:
+        x1 = Value(x1_raw)
+        x2 = Value(x2_raw)
+        y_true = Value(y_raw)
+
+        y_pred = forward(x1, x2)
+        total_loss += cross_entropy(y_true, y_pred)
+
+    # Average loss
+    avg_loss = total_loss / len(training_data)
+
+    # Backprop
+    avg_loss.zero_grad()
+    avg_loss.backward()
+
+    # Gradient descent step
+    w1.data -= lr * w1.grad
+    w2.data -= lr * w2.grad
+    b.data  -= lr * b.grad
+
+# Print learned parameters
+print(f"Trained parameters:\n  w1={w1.data}, w2={w2.data}, b={b.data}\n")
+
+# Print final predictions
+for (x1_raw, x2_raw), _ in training_data:
+    x1 = Value(x1_raw)
+    x2 = Value(x2_raw)
+    y_pred = forward(x1, x2)
+    print(f"For ({x1_raw},{x2_raw}): {y_pred.data}")
+```
+
+Then run:
+
+```bash
+python example_and.py
+```
+
+You should see final predictions close to `0` for `(0,0), (0,1), (1,0)` and close to `1` for `(1,1)`.
+
+### 2. Visualizing the Computation Graph
+
+If you want to visualize the computation graph of a particular expression, ensure `graphviz` is installed. For example:
+
+```python
+from nanograd.nanograd import Value
+
+x = Value(2.0, name="x")
+y = Value(3.0, name="y")
+z = (x * y + x / y).tanh()
+
+dot = z.visualize()
+dot.render("graph_output", format="png", cleanup=True)
+```
+
+You’ll get a `graph_output.png` file showing the nodes (`x`, `y`, intermediate ops) and edges representing the computational flow.
+
+---
+
+## How It Works
+
+1. **Computation Graph Construction**  
+   Each arithmetic operation (`+`, `*`, `tanh()`, etc.) creates a new `Value` node referencing its parents.  
+2. **Topological Sort & Backprop**  
+   Calling `z.backward()` on the final output `z` does a reverse traversal of the graph—accumulating gradients in each node’s `grad` attribute.  
+3. **Parameter Updates**  
+   After backprop, you can do `w.data -= lr * w.grad` to perform a gradient descent step.
+
+For more details, see the docstrings in `nanograd` or browse the code in this repository.
